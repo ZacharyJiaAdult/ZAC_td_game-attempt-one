@@ -1,0 +1,13 @@
+# editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Roblox place files and build output (the source of truth is src/)
+*.rbxl
+*.rbxlx
+*.rbxl.lock
+*.rbxm
+*.rbxmx
+/build/

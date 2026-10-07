@@ -1,0 +1,23 @@
+{
+  "name": "spud-defence",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "Config": { "$path": "src/ReplicatedStorage/Config.luau" },
+      "Towers": { "$path": "src/ReplicatedStorage/Towers.luau" },
+      "Path": { "$path": "src/ReplicatedStorage/Path.luau" }
+    },
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "Game": { "$path": "src/ServerScriptService/Game.server.luau" }
+    },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "Client": { "$path": "src/StarterPlayerScripts/Client.client.luau" }
+      }
+    }
+  }
+}
