@@ -63,6 +63,18 @@ Towers.List = {
 		interval = 0.35,
 	},
 	{
+		id = "Hot Potato",
+		style = "Hot",
+		range = 11,
+		cost = 150,
+		unlockWave = 4,
+		color = Color3.fromRGB(255, 90, 50),
+		role = "Burns nearby",
+		kind = "pulse",
+		damage = 12,
+		interval = 0.9,
+	},
+	{
 		id = "Potato Nuke",
 		style = "Vanity",
 		range = 30,
@@ -75,23 +87,98 @@ Towers.List = {
 		interval = 2.6,
 	},
 	{
+		id = "Golden Potato",
+		style = "Gold",
+		range = 0,
+		cost = 200,
+		unlockWave = 6,
+		color = Color3.fromRGB(255, 205, 40),
+		role = "Big coins",
+		kind = "coins",
+		damage = 60, -- coins per payout
+		interval = 8,
+	},
+	{
 		id = "Mashed Potato",
 		style = "Gravity",
 		range = 15,
 		cost = 250,
 		unlockWave = 7,
 		color = Color3.fromRGB(110, 230, 170),
-		role = "Pulses the area",
+		role = "Pulses area",
 		kind = "pulse",
 		damage = 6,
 		interval = 1.5,
 		slow = 0.65,
 		slowSeconds = 1.5,
 	},
+	{
+		id = "Fry Gatling",
+		style = "Fry",
+		range = 17,
+		cost = 220,
+		unlockWave = 8,
+		color = Color3.fromRGB(250, 220, 90),
+		role = "Machine-gun fries",
+		kind = "shoot",
+		damage = 3,
+		interval = 0.12,
+	},
+	{
+		id = "Sniper Spud",
+		style = "Sniper",
+		range = 46,
+		cost = 300,
+		unlockWave = 9,
+		color = Color3.fromRGB(120, 120, 140),
+		role = "Huge range",
+		kind = "shoot",
+		damage = 80,
+		interval = 3.5,
+	},
+}
+
+-- Unique potatoes: you get these from the summon machine in the lobby. Once you own one it is available in
+-- every match from wave 1. (The default potatoes above are always available, unlocking as waves progress.)
+Towers.Unique = {
+	{
+		id = "Tater Tot Trooper", style = "Gaiety", rarity = "rare", range = 22, cost = 65, unlockWave = 1,
+		color = Color3.fromRGB(230, 170, 90), role = "Cheap sharpshooter", kind = "shoot", damage = 14, interval = 0.8,
+	},
+	{
+		id = "Baked Potato Bank", style = "Gold", rarity = "rare", range = 0, cost = 55, unlockWave = 1,
+		color = Color3.fromRGB(140, 200, 150), role = "Steady coins", kind = "coins", damage = 22, interval = 5,
+	},
+	{
+		id = "Wasabi Spud", style = "Hot", rarity = "epic", range = 13, cost = 130, unlockWave = 1,
+		color = Color3.fromRGB(150, 220, 90), role = "Burning pulse, slows", kind = "pulse", damage = 11, interval = 0.8,
+		slow = 0.7, slowSeconds = 1.5,
+	},
+	{
+		id = "Sour Cream Cannon", style = "Sniper", rarity = "epic", range = 30, cost = 160, unlockWave = 1,
+		color = Color3.fromRGB(245, 245, 235), role = "Heavy slowing shots", kind = "shoot", damage = 45, interval = 1.6,
+		slow = 0.6, slowSeconds = 2,
+	},
+	{
+		id = "Disco Spud", style = "Gaiety", rarity = "legendary", range = 18, cost = 220, unlockWave = 1,
+		color = Color3.fromRGB(255, 100, 220), role = "Fast party pulse", kind = "pulse", damage = 22, interval = 0.6,
+	},
+	{
+		id = "King Russet", style = "Verity", rarity = "legendary", range = 36, cost = 260, unlockWave = 1,
+		color = Color3.fromRGB(200, 150, 60), role = "Royal long-range hits", kind = "shoot", damage = 140, interval = 2.2,
+	},
+	{
+		id = "Cosmic Tuber", style = "Gravity", rarity = "mythic", range = 26, cost = 380, unlockWave = 1,
+		color = Color3.fromRGB(120, 140, 255), role = "Space-time pulse", kind = "pulse", damage = 50, interval = 0.5,
+		slow = 0.5, slowSeconds = 1,
+	},
 }
 
 Towers.ById = {}
 for _, tower in Towers.List do
+	Towers.ById[tower.id] = tower
+end
+for _, tower in Towers.Unique do
 	Towers.ById[tower.id] = tower
 end
 

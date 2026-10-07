@@ -6,7 +6,8 @@
       "$className": "ReplicatedStorage",
       "Config": { "$path": "src/ReplicatedStorage/Config.luau" },
       "Towers": { "$path": "src/ReplicatedStorage/Towers.luau" },
-      "Path": { "$path": "src/ReplicatedStorage/Path.luau" }
+      "Path": { "$path": "src/ReplicatedStorage/Path.luau" },
+      "Shop": { "$path": "src/ReplicatedStorage/Shop.luau" }
     },
     "ServerScriptService": {
       "$className": "ServerScriptService",
