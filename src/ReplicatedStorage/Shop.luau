@@ -65,6 +65,8 @@ Shop.Rarities = {
 	{ id = "epic", name = "Epic", weight = 28, color = Color3.fromRGB(190, 110, 255) },
 	{ id = "legendary", name = "Legendary", weight = 10, color = Color3.fromRGB(255, 190, 50) },
 	{ id = "mythic", name = "Mythic", weight = 2, color = Color3.fromRGB(255, 90, 110) },
+	{ id = "godly", name = "Godly", weight = 0.6, color = Color3.fromRGB(255, 245, 160) },
+	{ id = "celestial", name = "Celestial", weight = 0.15, color = Color3.fromRGB(140, 255, 245) },
 }
 Shop.RarityById = {}
 for _, rarity in Shop.Rarities do

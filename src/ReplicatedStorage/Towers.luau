@@ -172,6 +172,46 @@ Towers.Unique = {
 		color = Color3.fromRGB(120, 140, 255), role = "Space-time pulse", kind = "pulse", damage = 50, interval = 0.5,
 		slow = 0.5, slowSeconds = 1,
 	},
+
+	-- The Potato Potatoes: a potato wearing a potato. Each one has one more potato on its head than the last.
+	{
+		id = "Potato Potato", style = "Mini", rarity = "rare", range = 20, cost = 70, unlockWave = 1,
+		color = Color3.fromRGB(215, 170, 110), role = "A potato with a potato", kind = "shoot", damage = 18, interval = 0.9,
+	},
+	{
+		id = "Potato Potato Potato", style = "Mini2", rarity = "epic", range = 22, cost = 140, unlockWave = 1,
+		color = Color3.fromRGB(205, 160, 100), role = "Fast triple-potato fire", kind = "shoot", damage = 12, interval = 0.3,
+	},
+	{
+		id = "Potato Potato Potato Potato", style = "Mini3", rarity = "legendary", range = 28, cost = 230, unlockWave = 1,
+		color = Color3.fromRGB(195, 150, 95), role = "Potato tower, big hits", kind = "shoot", damage = 95, interval = 1.1,
+	},
+
+	-- Godly potatoes: heavenly power, very rare.
+	{
+		id = "Thunder Tater", style = "Halo", rarity = "godly", range = 32, cost = 420, unlockWave = 1,
+		color = Color3.fromRGB(255, 240, 120), role = "Smites everything nearby", kind = "pulse", damage = 60, interval = 0.5,
+		slow = 0.6, slowSeconds = 1,
+	},
+	{
+		id = "Tater Titan", style = "Halo", rarity = "godly", range = 42, cost = 480, unlockWave = 1,
+		color = Color3.fromRGB(255, 215, 90), role = "Colossal long-range hits", kind = "shoot", damage = 420, interval = 2.4,
+	},
+	{
+		id = "Angel Hash Brown", style = "Halo", rarity = "godly", range = 0, cost = 380, unlockWave = 1,
+		color = Color3.fromRGB(255, 250, 215), role = "Blessed coin payouts", kind = "coins", damage = 220, interval = 6,
+	},
+
+	-- Celestial potatoes: the rarest of all.
+	{
+		id = "Supernova Spud", style = "Star", rarity = "celestial", range = 40, cost = 700, unlockWave = 1,
+		color = Color3.fromRGB(160, 255, 255), role = "Stellar blasts, slows", kind = "pulse", damage = 140, interval = 0.4,
+		slow = 0.4, slowSeconds = 1,
+	},
+	{
+		id = "Eternal Spud", style = "Star", rarity = "celestial", range = 52, cost = 800, unlockWave = 1,
+		color = Color3.fromRGB(200, 170, 255), role = "Erases whatever it targets", kind = "shoot", damage = 1100, interval = 1.8,
+	},
 }
 
 Towers.ById = {}

@@ -10,6 +10,7 @@ local Shop = require(ReplicatedStorage:WaitForChild("Shop"))
 local TICK = 0.1
 local MAX_TOWERS = 80 -- per battlefield, shared by everyone in it
 local INVITE_SECONDS = 30
+local MAX_AMOUNT = 1e63 -- the biggest amount of anything a player can hold: 1 vigintillion
 local LOBBY_SPAWN = Vector3.new(1000, 5, 14) -- the lobby is built far from the battlefield
 
 -- Admins (by Roblox user id) get the admin panel. The check is done here on the server for every action,
@@ -1092,8 +1093,13 @@ adminEvent.OnServerEvent:Connect(function(player, action, target, a, b)
 		return
 	end
 
+	-- anything from 0 up to 1 vigintillion (1e63) in one gift; totals are capped at the same number
 	local function wholeNumber(value)
-		return math.clamp(math.floor(tonumber(value) or 0), 0, 1e9)
+		local number = tonumber(value) or 0
+		if number ~= number then
+			return 0 -- not a number
+		end
+		return math.clamp(math.floor(number), 0, MAX_AMOUNT)
 	end
 
 	local given = 0
@@ -1103,14 +1109,14 @@ adminEvent.OnServerEvent:Connect(function(player, action, target, a, b)
 		if action == "spuds" then
 			local amount = wholeNumber(a)
 			if amount > 0 then
-				otherProfile.spuds += amount
+				otherProfile.spuds = math.min(MAX_AMOUNT, otherProfile.spuds + amount)
 				message = `{amount} Spud Coins`
 			end
 		elseif action == "coins" then
 			local amount = wholeNumber(a)
 			local match = otherProfile.mode == "match" and otherProfile.match
 			if amount > 0 and match then
-				match.coins[other] += amount
+				match.coins[other] = math.min(MAX_AMOUNT, match.coins[other] + amount)
 				message = `{amount} battle coins`
 			end
 		elseif action == "potato" then
@@ -1130,7 +1136,7 @@ adminEvent.OnServerEvent:Connect(function(player, action, target, a, b)
 			local ability = typeof(a) == "string" and Shop.AbilityById[a]
 			local amount = wholeNumber(b)
 			if ability and amount > 0 then
-				otherProfile.abilities[ability.id] = (otherProfile.abilities[ability.id] or 0) + amount
+				otherProfile.abilities[ability.id] = math.min(MAX_AMOUNT, (otherProfile.abilities[ability.id] or 0) + amount)
 				message = `{amount} x {ability.name}`
 			end
 		end

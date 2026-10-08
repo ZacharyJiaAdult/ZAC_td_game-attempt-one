@@ -41,17 +41,40 @@ local function make(class, props, parent)
 	return inst
 end
 
--- 1234567 -> "1.23M", 12345 -> "12.3K", 999 -> "999"
+-- Number suffixes, one per three digits, up to a vigintillion (1e63). The admin panel can give that much.
+local SUFFIXES = {
+	"K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc",
+	"Ud", "Dd", "Td", "Qad", "Qid", "Sxd", "Spd", "Ocd", "Nod", "Vg",
+}
+
+-- 1234567 -> "1.23M", 12345 -> "12.3K", 999 -> "999", 1e63 -> "1.00Vg"
 local function short(n)
 	n = math.floor(n)
-	if n >= 1e9 then
-		return string.format("%.2fB", n / 1e9)
-	elseif n >= 1e6 then
-		return string.format("%.2fM", n / 1e6)
-	elseif n >= 1e4 then
-		return string.format("%.1fK", n / 1e3)
+	if n < 1e4 then
+		return tostring(n)
 	end
-	return tostring(n)
+	local tier = math.min(#SUFFIXES, math.floor(math.log10(n) / 3))
+	local scaled = n / 10 ^ (tier * 3)
+	return string.format(tier == 1 and "%.1f%s" or "%.2f%s", scaled, SUFFIXES[tier])
+end
+
+-- "5000", "1e63", "2.5M" or "1vg" -> a number (the admin panel's amount box accepts all of these)
+local function parseAmount(text)
+	text = string.lower(string.gsub(text, "[%s,]", ""))
+	local plain = tonumber(text)
+	if plain then
+		return plain
+	end
+	local number, suffix = string.match(text, "^([%d%.]+)(%a+)$")
+	number = tonumber(number)
+	if number then
+		for index, name in SUFFIXES do
+			if string.lower(name) == suffix then
+				return number * 10 ^ (index * 3)
+			end
+		end
+	end
+	return 0
 end
 
 local function colorTag(color, text)
@@ -491,6 +514,42 @@ local function addAccessory(model, def, top, radius)
 			Color = Color3.fromRGB(30, 30, 40), Material = Enum.Material.Metal, Parent = model })
 		part({ Name = "Cap", Size = Vector3.new(radius * 1.4, 0.5, radius * 1.4), Position = top + Vector3.new(0, 0.1, 0),
 			Color = Color3.fromRGB(60, 80, 55), Parent = model })
+	elseif id == "Mini" or id == "Mini2" or id == "Mini3" then
+		-- the Potato Potatoes: smaller potatoes stacked on the head (one, two or three of them)
+		local count = tonumber(string.match(id, "%d")) or 1
+		local height = 0
+		for i = 1, count do
+			local size = radius * (0.95 - 0.18 * (i - 1))
+			local center = top + Vector3.new(0, height + size * 0.45, 0)
+			part({ Name = "MiniPotato", Shape = Enum.PartType.Ball, Size = Vector3.new(size * 1.1, size * 0.95, size),
+				Position = center, Color = Color3.fromRGB(205, 160, 100), Material = Enum.Material.SmoothPlastic, Parent = model })
+			for _, side in { -1, 1 } do
+				part({ Name = "MiniEye", Shape = Enum.PartType.Ball, Size = Vector3.one * size * 0.22,
+					Position = center + Vector3.new(size * 0.5, size * 0.1, side * size * 0.2), Color = Color3.new(0, 0, 0), Parent = model })
+			end
+			height += size * 0.8
+		end
+	elseif id == "Halo" then
+		-- godly: a glowing halo and a pair of wings
+		part({ Name = "Halo", Shape = Enum.PartType.Cylinder, Size = Vector3.new(0.25, radius * 1.5, radius * 1.5),
+			CFrame = CFrame.new(top + Vector3.new(0, 1.8, 0)) * CFrame.Angles(0, 0, math.pi / 2),
+			Color = Color3.fromRGB(255, 225, 90), Material = Enum.Material.Neon, Parent = model })
+		for _, side in { -1, 1 } do
+			part({ Name = "Wing", Size = Vector3.new(0.3, radius * 1.4, radius * 1.1),
+				CFrame = CFrame.new(top - Vector3.new(0, radius * 0.9, 0) + Vector3.new(-0.6, 0, side * radius * 1.15)) * CFrame.Angles(side * 0.5, 0, 0.2),
+				Color = Color3.fromRGB(255, 252, 235), Material = Enum.Material.Neon, Transparency = 0.15, Parent = model })
+		end
+	elseif id == "Star" then
+		-- celestial: a bright star over the head, with three little moons circling it
+		part({ Name = "Star", Size = Vector3.one * 1.5, CFrame = CFrame.new(top + Vector3.new(0, 2.2, 0)) * CFrame.Angles(math.rad(45), 0, math.rad(45)),
+			Color = Color3.fromRGB(255, 255, 255), Material = Enum.Material.Neon, Parent = model })
+		local moonColors = { Color3.fromRGB(120, 255, 240), Color3.fromRGB(190, 150, 255), Color3.fromRGB(255, 160, 220) }
+		for i = 1, 3 do
+			local angle = i / 3 * math.pi * 2
+			part({ Name = "Moon", Shape = Enum.PartType.Ball, Size = Vector3.one * 0.9,
+				Position = top + Vector3.new(math.cos(angle) * radius * 1.3, 1.1, math.sin(angle) * radius * 1.3),
+				Color = moonColors[i], Material = Enum.Material.Neon, Parent = model })
+		end
 	end
 end
 
@@ -500,7 +559,8 @@ local function buildTower(uid, x, z, def, level, parent, ownerName)
 	local base = Vector3.new(x, 0.2, z)
 	local model = Instance.new("Model")
 	model.Name = `Tower{uid}`
-	local radius = 2 + (level - 1) * 0.3
+	-- godly and celestial potatoes are bigger
+	local radius = 2 + (level - 1) * 0.3 + (({ godly = 0.4, celestial = 0.8 })[def.rarity or ""] or 0)
 	part({
 		Name = "Pedestal",
 		Shape = Enum.PartType.Cylinder,
@@ -1106,7 +1166,7 @@ local function refreshUniqueHall(ownedList)
 		return a.id < b.id
 	end)
 	for index, def in defs do
-		local x = -45 + (index - 1) * (90 / math.max(1, #Towers.Unique - 1))
+		local x = -50 + (index - 1) * (100 / math.max(1, #Towers.Unique - 1))
 		buildTower(`unique{index}`, LOBBY.X + x, LOBBY.Z + 52, def, 1, uniqueHall)
 	end
 end
@@ -1467,7 +1527,7 @@ end
 
 -- SUMMON: unique potatoes ------------------------------------------------------------------------------------
 
-local summonPanel = newPanel("summon", "SUMMON POTATOES", 640)
+local summonPanel = newPanel("summon", "SUMMON POTATOES", 710)
 
 -- the odds shown here are computed from the very weights the server rolls with
 local function oddsText()
@@ -1486,7 +1546,11 @@ local function oddsText()
 		local count = perRarity[rarity.id]
 		if count then
 			local chance = rarity.weight / total * 100
-			table.insert(lines, `{colorTag(rarity.color, `<b>{rarity.name}</b>`)}  {string.format("%.0f", chance)}%  ({string.format("%.1f", chance / count)}% each, {count} potato{count == 1 and "" or "es"})`)
+			-- small chances need decimals to be shown honestly
+			local function percent(value)
+				return value >= 10 and string.format("%.0f", value) or (value >= 1 and string.format("%.1f", value) or string.format("%.2f", value))
+			end
+			table.insert(lines, `{colorTag(rarity.color, `<b>{rarity.name}</b>`)}  {percent(chance)}%  ({percent(chance / count)}% each, {count} potato{count == 1 and "" or "es"})`)
 		end
 	end
 	table.insert(lines, "")
@@ -1521,7 +1585,7 @@ end)
 local collectionTitle = textLabel(summonPanel, {
 	Position = UDim2.fromOffset(20, 376), Size = UDim2.new(1, -40, 0, 24), Font = Enum.Font.GothamBold, TextSize = 17, Text = "YOUR COLLECTION",
 })
-local collection = make("Frame", { Position = UDim2.fromOffset(20, 404), Size = UDim2.new(1, -40, 0, 220), BackgroundTransparency = 1 }, summonPanel)
+local collection = make("Frame", { Position = UDim2.fromOffset(20, 404), Size = UDim2.new(1, -40, 0, 290), BackgroundTransparency = 1 }, summonPanel)
 make("UIGridLayout", { CellSize = UDim2.fromOffset(160, 50), CellPadding = UDim2.fromOffset(8, 8), SortOrder = Enum.SortOrder.LayoutOrder }, collection)
 local collectionTiles = {} -- [id] = { frame, name }
 local sortedUniques = table.clone(Towers.Unique)
@@ -1548,7 +1612,7 @@ end
 local function refreshLobbyUi()
 	spudsLabel.Text = `SPUD COINS: {short(lobby.spuds)}`
 	for id, row in abilityRows do
-		row.owned.Text = `x{lobby.abilities[id] or 0}`
+		row.owned.Text = `x{short(lobby.abilities[id] or 0)}`
 		row.buy.BackgroundColor3 = lobby.spuds >= row.price and Color3.fromRGB(70, 160, 90) or Color3.fromRGB(90, 90, 90)
 	end
 	summonOne.BackgroundColor3 = lobby.spuds >= Shop.SummonCost and Color3.fromRGB(190, 120, 40) or Color3.fromRGB(90, 90, 90)
@@ -1825,7 +1889,7 @@ local adminToggle = textButton(adminGui, {
 	BackgroundColor3 = Color3.fromRGB(120, 40, 160), TextSize = 15, Text = "ADMIN",
 })
 local adminFrame = make("Frame", {
-	AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(700, 610),
+	AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(700, 690),
 	BackgroundColor3 = Color3.fromRGB(30, 22, 40), Visible = false,
 }, adminGui)
 addCorner(adminFrame, 16)
@@ -1917,7 +1981,7 @@ local function fireAdmin(action, a, b)
 	adminEvent:FireServer(action, target, a, b)
 end
 local function amountValue()
-	return math.floor(tonumber(amountBox.Text) or 0)
+	return math.floor(parseAmount(amountBox.Text))
 end
 
 local function adminButton(text, position, size, color, callback)
@@ -1932,10 +1996,14 @@ end)
 adminButton("GIVE MATCH COINS", UDim2.fromOffset(464, 108), UDim2.fromOffset(222, 44), Color3.fromRGB(60, 140, 90), function()
 	fireAdmin("coins", amountValue())
 end)
+-- the biggest amount the game allows: 1 vigintillion (1e63). You can also type things like 5000, 2.5M or 1e30.
+adminButton("MAX: 1 VIGINTILLION", UDim2.fromOffset(490, 60), UDim2.fromOffset(196, 36), Color3.fromRGB(150, 70, 200), function()
+	amountBox.Text = "1e63"
+end)
 
 textLabel(adminFrame, { Position = UDim2.fromOffset(230, 168), Size = UDim2.fromOffset(450, 22), Font = Enum.Font.GothamBold, Text = "GIVE A UNIQUE POTATO" })
-local potatoGrid = make("Frame", { Position = UDim2.fromOffset(230, 194), Size = UDim2.fromOffset(456, 190), BackgroundTransparency = 1 }, adminFrame)
-make("UIGridLayout", { CellSize = UDim2.fromOffset(146, 40), CellPadding = UDim2.fromOffset(8, 8), SortOrder = Enum.SortOrder.LayoutOrder }, potatoGrid)
+local potatoGrid = make("Frame", { Position = UDim2.fromOffset(230, 194), Size = UDim2.fromOffset(456, 250), BackgroundTransparency = 1 }, adminFrame)
+make("UIGridLayout", { CellSize = UDim2.fromOffset(146, 34), CellPadding = UDim2.fromOffset(8, 6), SortOrder = Enum.SortOrder.LayoutOrder }, potatoGrid)
 local allPotatoes = textButton(potatoGrid, { LayoutOrder = 0, BackgroundColor3 = Color3.fromRGB(150, 70, 200), TextSize = 14, Text = "ALL POTATOES" })
 allPotatoes.Activated:Connect(function()
 	fireAdmin("potato", "all")
@@ -1951,8 +2019,8 @@ for order, def in sortedUniques do
 	end)
 end
 
-textLabel(adminFrame, { Position = UDim2.fromOffset(230, 400), Size = UDim2.fromOffset(450, 22), Font = Enum.Font.GothamBold, Text = "GIVE ABILITIES  (uses the amount above)" })
-local abilityGrid = make("Frame", { Position = UDim2.fromOffset(230, 426), Size = UDim2.fromOffset(456, 160), BackgroundTransparency = 1 }, adminFrame)
+textLabel(adminFrame, { Position = UDim2.fromOffset(230, 462), Size = UDim2.fromOffset(450, 22), Font = Enum.Font.GothamBold, Text = "GIVE ABILITIES  (uses the amount above)" })
+local abilityGrid = make("Frame", { Position = UDim2.fromOffset(230, 488), Size = UDim2.fromOffset(456, 160), BackgroundTransparency = 1 }, adminFrame)
 make("UIGridLayout", { CellSize = UDim2.fromOffset(146, 44), CellPadding = UDim2.fromOffset(8, 8), SortOrder = Enum.SortOrder.LayoutOrder }, abilityGrid)
 for order, ability in Shop.AllAbilities do
 	local button = textButton(abilityGrid, {
@@ -2051,7 +2119,7 @@ local function renderMatch(state)
 	for _, ability in Shop.AllAbilities do
 		local count = state.abilities[ability.id] or 0
 		local button = abilityButtons[ability.id]
-		button.Text = `{ability.name}   x{count}`
+		button.Text = `{ability.name}   x{short(count)}`
 		button.BackgroundTransparency = count > 0 and 0 or 0.55
 		button.Visible = not ability.adminOnly or count > 0 -- admin-only abilities only show up once you hold one
 	end
